@@ -30,7 +30,7 @@ if menu == "Logout":
     st.rerun()
 col1, col2 = st.columns([1, 3])
 with col1 :
-    st.image(r"C:\Users\user\PROJEK SIM\.vscode\LOGO KAJANG.png")
+    st.image("images/LOGO_KAJANG.png")
 with col2 :
     st.title("KAJANG.ID")
     st.write("Sistem penjualan kacang panjang secara online")
