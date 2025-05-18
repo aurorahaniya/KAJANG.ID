@@ -4,6 +4,17 @@ from datetime import datetime
 import os
 import uuid 
 import matplotlib.pyplot as plt
+import sqlite3
+df = pd.read_csv("orders.csv")
+
+# Koneksi ke database SQLite
+conn = sqlite3.connect("orders.db")
+
+# Simpan DataFrame ke tabel SQL
+df.to_sql("orders", conn, if_exists="replace", index=False)
+
+conn.close()
+print("Berhasil mengubah orders.csv menjadi orders.db")
 st.set_page_config(page_title = "KAJANG.ID")
 file_orders = "orders.csv"
 df = pd.DataFrame()
