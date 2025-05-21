@@ -253,83 +253,83 @@ if menu == "👤 Pelanggan":
             st.error("File 'orders.csv' tidak ditemukan.")
             st.stop()
 
-    data['waktu'] = pd.to_datetime(data['waktu'])    
-    st.subheader("Data Penjualan (preview)")
-    st.dataframe(data.head())
-   
-    total_omset = data['total'].sum()
-    total_unit = data['jumlah'].sum()
-    rata_penjualan = data.groupby('waktu')['total'].sum().mean()
-    max_penjualan = data.groupby('waktu')['total'].sum().max()
-    min_penjualan = data.groupby('waktu')['total'].sum().min()
+        data['waktu'] = pd.to_datetime(data['waktu'])    
+        st.subheader("Data Penjualan (preview)")
+        st.dataframe(data.head())
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Omset (Rp)", f"{total_omset:,}")
-    col2.metric("Total Kacang Panjang Terjual (unit)", f"{total_unit}")
-    col3.metric("Rata-rata Penjualan Harian (Rp)", f"{rata_penjualan:,.0f}")
+        total_omset = data['total'].sum()
+        total_unit = data['jumlah'].sum()
+        rata_penjualan = data.groupby('waktu')['total'].sum().mean()
+        max_penjualan = data.groupby('waktu')['total'].sum().max()
+        min_penjualan = data.groupby('waktu')['total'].sum().min()
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Omset (Rp)", f"{total_omset:,}")
+        col2.metric("Total Kacang Panjang Terjual (unit)", f"{total_unit}")
+        col3.metric("Rata-rata Penjualan Harian (Rp)", f"{rata_penjualan:,.0f}")
 
-    penjualan_harian = data.groupby('waktu')['total'].sum().reset_index()
+        penjualan_harian = data.groupby('waktu')['total'].sum().reset_index()
 
-    penjualan_harian['MA_7'] = penjualan_harian['total'].rolling(window=7).mean()
+        penjualan_harian['MA_7'] = penjualan_harian['total'].rolling(window=7).mean()
 
-    st.subheader("Grafik Penjualan Harian dengan Moving Average 7 Hari")
-    fig, ax = plt.subplots(figsize=(10,5))
-    ax.plot(penjualan_harian['waktu'], penjualan_harian['total'], label='Penjualan Harian', marker='o')
-    ax.plot(penjualan_harian['waktu'], penjualan_harian['MA_7'], label='Moving Average 7 Hari', linewidth=3)
-    ax.set_xlabel('waktu')
-    ax.set_ylabel('Total Penjualan (Rp)')
-    ax.legend()
-    st.pyplot(fig)
+        st.subheader("Grafik Penjualan Harian dengan Moving Average 7 Hari")
+        fig, ax = plt.subplots(figsize=(10,5))
+        ax.plot(penjualan_harian['waktu'], penjualan_harian['total'], label='Penjualan Harian', marker='o')
+        ax.plot(penjualan_harian['waktu'], penjualan_harian['MA_7'], label='Moving Average 7 Hari', linewidth=3)
+        ax.set_xlabel('waktu')
+        ax.set_ylabel('Total Penjualan (Rp)')
+        ax.legend()
+        st.pyplot(fig)
 
-    data['Bulan'] = data['waktu'].dt.to_period('M').astype(str)
-    penjualan_bulanan = data.groupby('Bulan')['total'].sum().reset_index()
-    if not penjualan_bulanan.empty:
-        bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
-        st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
-    else:
-        st.warning("Tidak ada data penjualan bulanan.")
+        data['Bulan'] = data['waktu'].dt.to_period('M').astype(str)
+        penjualan_bulanan = data.groupby('Bulan')['total'].sum().reset_index()
+        if not penjualan_bulanan.empty:
+            bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
+            st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
+        else:
+            st.warning("Tidak ada data penjualan bulanan.")
 
-    st.subheader("Penjualan Bulanan")
-    st.bar_chart(penjualan_bulanan.set_index('Bulan'))
-    if not penjualan_bulanan.empty:
-        bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
-        st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
-        st.markdown(f"*Bulan terbaik:* {bulan_terbaik['Bulan']} dengan penjualan Rp {bulan_terbaik['total']:,}")
-    else:
-        st.warning("Data penjualan bulanan kosong. Tidak bisa menentukan bulan terbaik.")
-    
-    nama_hari_indonesia = {
-    'Monday': 'Senin',
-    'Tuesday': 'Selasa',
-    'Wednesday': 'Rabu',
-    'Thursday': 'Kamis',
-    'Friday': 'Jumat',
-    'Saturday': 'Sabtu',
-    'Sunday': 'Minggu'}
-    penjualan_hari = data.groupby(data['waktu'].dt.day_name())['total'].sum()
-    penjualan_hari = penjualan_hari.rename(index=nama_hari_indonesia)
-    if not penjualan_hari.empty:
-        hari_terbaik = penjualan_hari.idxmax()
-        st.subheader("Penjualan per Hari dalam Minggu")
-        st.bar_chart(penjualan_hari)
-        st.markdown(f"*Hari terbaik:* {hari_terbaik} dengan penjualan Rp {penjualan_hari[hari_terbaik]:,}")
-    else:
-        st.warning("Data penjualan per hari kosong.")
-    
-    st.subheader("Tabel Ringkasan Penjualan Bulanan")
-    st.dataframe(penjualan_bulanan)
-
-
-
-
-
-
-
-
+        st.subheader("Penjualan Bulanan")
+        st.bar_chart(penjualan_bulanan.set_index('Bulan'))
+        if not penjualan_bulanan.empty:
+            bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
+            st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
+            st.markdown(f"*Bulan terbaik:* {bulan_terbaik['Bulan']} dengan penjualan Rp {bulan_terbaik['total']:,}")
+        else:
+            st.warning("Data penjualan bulanan kosong. Tidak bisa menentukan bulan terbaik.")
+        
+        nama_hari_indonesia = {
+        'Monday': 'Senin',
+        'Tuesday': 'Selasa',
+        'Wednesday': 'Rabu',
+        'Thursday': 'Kamis',
+        'Friday': 'Jumat',
+        'Saturday': 'Sabtu',
+        'Sunday': 'Minggu'}
+        penjualan_hari = data.groupby(data['waktu'].dt.day_name())['total'].sum()
+        penjualan_hari = penjualan_hari.rename(index=nama_hari_indonesia)
+        if not penjualan_hari.empty:
+            hari_terbaik = penjualan_hari.idxmax()
+            st.subheader("Penjualan per Hari dalam Minggu")
+            st.bar_chart(penjualan_hari)
+            st.markdown(f"*Hari terbaik:* {hari_terbaik} dengan penjualan Rp {penjualan_hari[hari_terbaik]:,}")
+        else:
+            st.warning("Data penjualan per hari kosong.")
+        
+        st.subheader("Tabel Ringkasan Penjualan Bulanan")
+        st.dataframe(penjualan_bulanan)
 
 
 
 
 
-    
+
+
+
+
+
+
+
+
+        
     
