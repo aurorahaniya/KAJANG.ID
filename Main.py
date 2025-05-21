@@ -244,14 +244,14 @@ if menu == "👤 Pelanggan":
                 st.info("Pelanggan ini belum memiliki riwayat belanja.")
     else:
         st.warning("Belum ada data pesanan yang tersimpan.")
-if menu == "📊 Laporan Penjualan":
-   st.divider()
-   st.subheader("LAPORAN KAJANG.ID")
-    try:
-       data = pd.read_csv("orders.csv")
-    except FileNotFoundError:
-       st.error("File 'orders.csv' tidak ditemukan.")
-       st.stop()
+    if menu == "📊 Laporan Penjualan":
+        st.divider()
+        st.subheader("LAPORAN KAJANG.ID")
+        try:
+            data = pd.read_csv("orders.csv")
+        except FileNotFoundError:
+            st.error("File 'orders.csv' tidak ditemukan.")
+            st.stop()
 
     data['waktu'] = pd.to_datetime(data['waktu'])    
     st.subheader("Data Penjualan (preview)")
