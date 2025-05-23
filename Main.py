@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import uuid 
 import matplotlib.pyplot as plt
+os.makedirs("uploads", exist_ok=True)
 st.set_page_config(page_title = "KAJANG.ID")
 file_orders = "orders.csv"
 df = pd.DataFrame()
@@ -98,7 +99,7 @@ if menu == "📦 Pemesanan":
                         "jumlah": quantity,
                         "alamat": address,
                         "pilih metode pengiriman": delivery,
-                        "bukti pembayaran": os.path.basename(file_path),
+                        "bukti pembayaran": file_path,
                         "catatan tambahan": notes,
                         "total": total,
                         "id_pesanan": id_pesanan,
@@ -199,12 +200,9 @@ if menu == "📥 Update Stok":
 if menu == "📑 Pesanan":
     st.divider()
     df = pd.read_csv("orders.csv")
-    st.dataframe(df)
-
     for i, row in df.iterrows():
-        bukti_path = f"uploads/{row['bukti pembayaran']}"
-        if os.path.exists(bukti_path):
-            st.image(bukti_path, caption=f"Bukti Pembayaran - {row['nama']}")
+        st.write(f"Pesanan atas nama: {row['nama']}")
+        st.image(row["bukti pembayaran"], caption="Bukti Pembayaran")
     file_orders = "orders.csv"
     if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
         df = pd.read_csv(file_orders)
