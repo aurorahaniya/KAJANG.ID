@@ -45,49 +45,43 @@ def baca_stok():
     df = pd.read_csv("stock.csv")
     stok = int(df[df["Produk"] == "Kacang Panjang"]["stok"].values[0])
     return stok
-if menu == "📦 Pemesanan" :
+if menu == "📦 Pemesanan":
     file_orders = "orders.csv"
-    if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
-        try:
-            df = pd.read_csv(file_orders)
-            if "id_pesanan" not in df.columns:
-                df["id_pesanan"] = [str(uuid.uuid4())[:4] for _ in range(len(df))]
-                df.to_csv(file_orders, index=False)
-        except pd.errors.EmptyDataError:
-            df = pd.DataFrame(columns=[
-            "waktu", "nama", "Nomor Telepon", "jumlah", "alamat",
-            "pilih metode pengiriman", "bukti pembayaran", "catatan tambahan", "total","id_pesanan",])
-        df.to_csv(file_orders, index=False)
-    if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
-        df = pd.read_csv(file_orders)
-        if "id_pesanan" not in df.columns:
-            df["id_pesanan"] = [str(uuid.uuid4())[:4] for _ in range(len(df))]
-            df.to_csv(file_orders, index=False)
-    st.divider()
     harga = 6000
-    st.write("**Harga = 6000/iket**")
-    st.write("**Silakan transfer ke rekening :**")
-    st.write("**BCA-522020891 a.n KAJANG.ID**")
+
+    # Pastikan file orders.csv punya header jika belum ada
+    if not os.path.exists(file_orders) or os.path.getsize(file_orders) == 0:
+        kolom = ["waktu", "nama", "Nomor Telepon", "jumlah", "alamat",
+                 "pilih metode pengiriman", "bukti pembayaran",
+                 "catatan tambahan", "total", "id_pesanan"]
+        pd.DataFrame(columns=kolom).to_csv(file_orders, index=False)
+
+    st.divider()
+    st.write("*Harga = 6000/iket*")
+    st.write("*Silakan transfer ke rekening :*")
+    st.write("*BCA-522020891 a.n KAJANG.ID*")
     st.divider()
     st.subheader("PESAN 📩")
+
     stok_tersedia = baca_stok()
-    st.write(f"**Stok tersedia saat ini: {stok_tersedia} ikat**")
-    stok_tersedia = baca_stok()
-    with st.form("order_form") :
+    st.write(f"*Stok tersedia saat ini: {stok_tersedia} ikat*")
+
+    with st.form("order_form"):
         name = st.text_input("Nama Anda")
         phone = st.text_input("Nomor Telepon")
-        stok_tersedia = baca_stok()
         quantity = st.number_input("Jumlah (Perikat)", min_value=1, max_value=stok_tersedia, step=1)
         address = st.text_area("Alamat Pengiriman")
-        delivery = st.selectbox("Pilih Metode Pengiriman", ["Ambil di tempat","Antar ke rumah"])
-        total = quantity * harga
-        total_pembayaran = st.write(f"Total: Rp {total:,}")
+        delivery = st.selectbox("Pilih Metode Pengiriman", ["Ambil di tempat", "Antar ke rumah"])
         bukti = st.file_uploader("Bukti Pembayaran", type=["jpg", "jpeg", "png"])
         notes = st.text_input("Catatan Tambahan")
+        total = quantity * harga
+        st.write(f"Total: Rp {total:,}")
         submitted = st.form_submit_button("Pesan Sekarang")
+
         if submitted:
-            total = quantity * 6000
-            if bukti is not None:
+            if not bukti:
+                st.warning("Mohon unggah bukti pembayaran sebelum melanjutkan.")
+            else:
                 id_pesanan = str(uuid.uuid4())[:4]
                 st.image(bukti, caption="Bukti Pembayaran")
                 folder_path = "uploads"
@@ -95,29 +89,31 @@ if menu == "📦 Pemesanan" :
                 file_path = os.path.join(folder_path, bukti.name)
                 with open(file_path, "wb") as f:
                     f.write(bukti.getbuffer())
-                    bukti_path = file_path
-                    order = {
-                        "waktu": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "nama": name,
-                        "Nomor Telepon":phone,
-                        "jumlah": quantity,
-                        "alamat": address,
-                        "pilih metode pengiriman":delivery,
-                        "bukti pembayaran":bukti.name,
-                        "catatan tambahan":notes,
-                        "total": total,
-                        "id_pesanan": id_pesanan,   }
-                    df = pd.DataFrame([order])
-                    file_exists = os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0
-                    df.to_csv("orders.csv", mode='a', header=not file_exists, index=False)
-                    stok_baru = stok_tersedia - quantity
-                    df_stok = pd.read_csv("stock.csv")
-                    df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
-                    df_stok.to_csv("stock.csv", index=False)
-                    st.success(f"✅ Pesanan berhasil atas nama **{name}** sebesar **Rp {total:,}**. \n\nID pesanan kamu: `{id_pesanan}`. Simpan ID ini untuk cek status.")
-                    st.info("Simpan ID pesanan ini untuk cek status.")
-            else:
-                    st.warning("Mohon unggah bukti pembayaran sebelum melanjutkan.")
+
+                order = {
+                    "waktu": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "nama": name,
+                    "Nomor Telepon": phone,
+                    "jumlah": quantity,
+                    "alamat": address,
+                    "pilih metode pengiriman": delivery,
+                    "bukti pembayaran": bukti.name,
+                    "catatan tambahan": notes,
+                    "total": total,
+                    "id_pesanan": id_pesanan,
+                }
+
+                df = pd.DataFrame([order])
+                df.to_csv(file_orders, mode='a', header=False, index=False)
+
+                # Update stok
+                stok_baru = stok_tersedia - quantity
+                df_stok = pd.read_csv("stock.csv")
+                df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
+                df_stok.to_csv("stock.csv", index=False)
+
+                st.success(f"✅ Pesanan berhasil atas nama *{name}* sebesar *Rp {total:,}*. \n\nID pesanan kamu: {id_pesanan}.")
+                st.info("Simpan ID pesanan ini untuk cek status.")
     st.subheader("Cek Status Pemesanan")
     kode = st.text_input("Masukkan ID Pesanan untuk Cek Status")
     cek_button = st.button("🔍 Cek Sekarang")
