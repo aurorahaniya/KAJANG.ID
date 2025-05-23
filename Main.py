@@ -81,39 +81,46 @@ if menu == "📦 Pemesanan":
         if submitted:
             if not bukti:
                 st.warning("Mohon unggah bukti pembayaran sebelum melanjutkan.")
-            else:
-                id_pesanan = str(uuid.uuid4())[:4]
-                st.image(bukti, caption="Bukti Pembayaran")
-                folder_path = "uploads"
-                os.makedirs(folder_path, exist_ok=True)
-                file_path = os.path.join(folder_path, bukti.name)
-                with open(file_path, "wb") as f:
-                    f.write(bukti.getbuffer())
+            else:  
+                try:
+                    id_pesanan = str(uuid.uuid4())[:4]
+                    waktu_pesan = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    folder_path = "uploads"
+                    os.makedirs(folder_path, exist_ok=True)
+                    file_path = os.path.join(folder_path, bukti.name)
+                    with open(file_path, "wb") as f:
+                        f.write(bukti.getbuffer())
 
-                order = {
-                    "waktu": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "nama": name,
-                    "Nomor Telepon": phone,
-                    "jumlah": quantity,
-                    "alamat": address,
-                    "pilih metode pengiriman": delivery,
-                    "bukti pembayaran": bukti.name,
-                    "catatan tambahan": notes,
-                    "total": total,
-                    "id_pesanan": id_pesanan,
-                }
+                    order = {
+                        "waktu": waktu_pesan,
+                        "nama": name,
+                        "Nomor Telepon": phone,
+                        "jumlah": quantity,
+                        "alamat": address,
+                        "pilih metode pengiriman": delivery,
+                        "bukti pembayaran": os.path.basename(file_path),
+                        "catatan tambahan": notes,
+                        "total": total,
+                        "id_pesanan": id_pesanan,
+                    }
 
-                df = pd.DataFrame([order])
-                df.to_csv(file_orders, mode='a', header=False, index=False)
+                    # DEBUG: tampilkan data sebelum simpan
+                    st.write("Data pesanan yang akan disimpan:", order)
 
-                # Update stok
-                stok_baru = stok_tersedia - quantity
-                df_stok = pd.read_csv("stock.csv")
-                df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
-                df_stok.to_csv("stock.csv", index=False)
+                    df = pd.DataFrame([order])
+                    file_exists = os.path.exists(file_orders) and os.path.getsize(file_orders) > 0
+                    df.to_csv(file_orders, mode='a', header=not file_exists, index=False)
 
-                st.success(f"✅ Pesanan berhasil atas nama *{name}* sebesar *Rp {total:,}*. \n\nID pesanan kamu: {id_pesanan}.")
-                st.info("Simpan ID pesanan ini untuk cek status.")
+                    # Update stok
+                    stok_baru = stok_tersedia - quantity
+                    df_stok = pd.read_csv("stock.csv")
+                    df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
+                    df_stok.to_csv("stock.csv", index=False)
+
+                    st.success(f"✅ Pesanan berhasil atas nama *{name}* sebesar *Rp {total:,}*.\n\nID pesanan kamu: {id_pesanan}.")
+                    st.info("Simpan ID pesanan ini untuk cek status.")
+                except Exception as e:
+                    st.error(f"Gagal menyimpan pesanan. Error: {e}")
     st.subheader("Cek Status Pemesanan")
     kode = st.text_input("Masukkan ID Pesanan untuk Cek Status")
     cek_button = st.button("🔍 Cek Sekarang")
