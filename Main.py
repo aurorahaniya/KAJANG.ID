@@ -198,6 +198,13 @@ if menu == "📥 Update Stok":
             df_stok.to_csv("stock.csv", index=False)    
 if menu == "📑 Pesanan":
     st.divider()
+    df = pd.read_csv("orders.csv")
+    st.dataframe(df)
+
+    for i, row in df.iterrows():
+        bukti_path = f"uploads/{row['bukti pembayaran']}"
+        if os.path.exists(bukti_path):
+            st.image(bukti_path, caption=f"Bukti Pembayaran - {row['nama']}")
     file_orders = "orders.csv"
     if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
         df = pd.read_csv(file_orders)
