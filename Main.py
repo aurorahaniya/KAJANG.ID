@@ -63,7 +63,6 @@ if menu == "📦 Pemesanan" :
         if "id_pesanan" not in df.columns:
             df["id_pesanan"] = [str(uuid.uuid4())[:4] for _ in range(len(df))]
             df.to_csv(file_orders, index=False)
-    file_orders = "orders.csv"
     st.divider()
     harga = 6000
     st.write("**Harga = 6000/iket**")
