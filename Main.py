@@ -198,6 +198,20 @@ if menu == "📥 Update Stok":
             df_stok.to_csv("stock.csv", index=False)    
 if menu == "📑 Pesanan":
     st.divider()
+    file_orders = "orders.csv"
+    if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
+        df = pd.read_csv(file_orders)
+        st.dataframe(df)
+
+        with open(file_orders, "rb") as f:
+            st.download_button(
+                label="Download Pesanan (CSV)",
+                data=f,
+                file_name="orders.csv",
+                mime="text/csv"
+            )
+    else:
+        st.info("Belum ada pesanan.")
     st.subheader("📑 Daftar Pesanan Masuk")
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
