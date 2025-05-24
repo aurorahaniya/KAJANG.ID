@@ -49,8 +49,6 @@ def baca_stok():
 if menu == "📦 Pemesanan":
     file_orders = "orders.csv"
     harga = 6000
-
-    # Pastikan file orders.csv punya header jika belum ada
     if not os.path.exists(file_orders) or os.path.getsize(file_orders) == 0:
         kolom = ["waktu", "nama", "Nomor Telepon", "jumlah", "alamat",
                  "pilih metode pengiriman", "bukti pembayaran",
@@ -58,9 +56,10 @@ if menu == "📦 Pemesanan":
         pd.DataFrame(columns=kolom).to_csv(file_orders, index=False)
 
     st.divider()
-    st.write("*Harga = 6000/iket*")
-    st.write("*Silakan transfer ke rekening :*")
-    st.write("*BCA-522020891 a.n KAJANG.ID*")
+    st.write("**Harga = 6000/iket**")
+    st.write("**Minimal pembelian 3 ikat**")
+    st.write("**Silakan transfer ke rekening :**")
+    st.write("**BCA-522020891 a.n KAJANG.ID**")
     st.divider()
     st.subheader("PESAN 📩")
 
@@ -70,7 +69,7 @@ if menu == "📦 Pemesanan":
     with st.form("order_form"):
         name = st.text_input("Nama Anda")
         phone = st.text_input("Nomor Telepon")
-        quantity = st.number_input("Jumlah (Perikat)", min_value=1, max_value=stok_tersedia, step=1)
+        quantity = st.number_input("Jumlah (Perikat)", min_value=3, max_value=stok_tersedia, step=1)
         address = st.text_area("Alamat Pengiriman")
         delivery = st.selectbox("Pilih Metode Pengiriman", ["Ambil di tempat", "Antar ke rumah"])
         bukti = st.file_uploader("Bukti Pembayaran", type=["jpg", "jpeg", "png"])
@@ -210,10 +209,10 @@ if menu == "📑 Pesanan":
                 data=f,
                 file_name="orders.csv",
                 mime="text/csv")
-            st.divider 
+            st.divider ()
             st.subheader ("🖥 Lihat Bukti Pembayaran")
-            id_pilihan = st.selectbox("Pilih ID Pesanan", df_orders["id"])
-            data_terpilih = df_orders[df_orders["id"] == id_pilihan].iloc[0]
+            id_pilihan = st.selectbox("Pilih ID Pesanan", df_orders["id_pesanan"])
+            data_terpilih = df_orders[df_orders["id_pesanan"] == id_pilihan].iloc[0]
             if os.path.exists(data_terpilih["bukti pembayaran"]):
                 st.image(data_terpilih["bukti pembayaran"], caption="Bukti Pembayaran", width=300)
             else:
@@ -228,7 +227,7 @@ if menu == "📑 Pesanan":
             st.divider()
             st.subheader("🔁 Update Status Pesanan")
             selected_id = st.selectbox("Pilih ID Pesanan", df_orders["id_pesanan"].unique())
-            new_status = st.selectbox("Pilih Status Baru", ["Baru", "Dikemas", "Dikirim", "Selesai"])
+            new_status = st.selectbox("Pilih Status Baru", ["Ditolak", "Dikemas", "Dikirim", "Selesai"])
             if st.button("Update Status"):
                 df_orders.loc[df_orders["id_pesanan"] == selected_id, "status"] = new_status
                 df_orders.to_csv("orders.csv", index=False)
