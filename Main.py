@@ -40,7 +40,7 @@ if menu == "🏠 Beranda" :
     st.subheader("HALAMAN UTAMA 🏠")
     st.write("KAJANG.ID merupakan sistem penjualan kacang panjang dalam mengelola penjualan secara efisien dan terstruktur. Sistem ini memudahkan pencatatan data penjualan, stok barang, harga, dan transaksi pelanggan secara online.")
     st.write("")
-    st.info("Silahkan pilih menu di samping untuk mulai!")
+    st.info("*Silahkan pilih menu di samping untuk mulai!*")
     st.divider()
 def baca_stok():
     df = pd.read_csv("stock.csv")
@@ -64,7 +64,7 @@ if menu == "📦 Pemesanan":
     st.subheader("PESAN 📩")
 
     stok_tersedia = baca_stok()
-    st.write(f"*Stok tersedia saat ini: {stok_tersedia} ikat*")
+    st.write(f"**Stok tersedia saat ini: {stok_tersedia} ikat**")
 
     with st.form("order_form"):
         name = st.text_input("Nama Anda")
@@ -211,10 +211,10 @@ if menu == "📑 Pesanan":
                 mime="text/csv")
             st.divider ()
             st.subheader ("🖥 Lihat Bukti Pembayaran")
-            id_pilihan = st.selectbox("Pilih ID Pesanan", df_orders["id_pesanan"])
+            id_pilihan = st.selectbox("Pilih ID Pesanan Pelanggan", df_orders["id_pesanan"].unique())
             data_terpilih = df_orders[df_orders["id_pesanan"] == id_pilihan].iloc[0]
             if os.path.exists(data_terpilih["bukti pembayaran"]):
-                st.image(data_terpilih["bukti pembayaran"], caption="Bukti Pembayaran", width=300)
+                st.image(data_terpilih["bukti pembayaran"], caption="Bukti Pembayaran", width=250)
             else:
                 st.warning("Bukti pembayaran belum tersedia.")
             st.subheader("🗑 Hapus Data Pesanan")
