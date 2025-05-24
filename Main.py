@@ -40,7 +40,7 @@ if menu == "🏠 Beranda" :
     st.subheader("HALAMAN UTAMA 🏠")
     st.write("KAJANG.ID merupakan sistem penjualan kacang panjang dalam mengelola penjualan secara efisien dan terstruktur. Sistem ini memudahkan pencatatan data penjualan, stok barang, harga, dan transaksi pelanggan secara online.")
     st.write("")
-    st.info("*Silahkan pilih menu di samping untuk mulai!*")
+    st.info("*Silakan pilih menu di samping untuk mulai!*")
     st.divider()
 def baca_stok():
     df = pd.read_csv("stock.csv")
