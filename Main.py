@@ -105,14 +105,10 @@ if menu == "📦 Pemesanan":
                         "id_pesanan": id_pesanan,
                     }
 
-                    # DEBUG: tampilkan data sebelum simpan
-                    st.write("Data pesanan yang akan disimpan:", order)
-
                     df = pd.DataFrame([order])
                     file_exists = os.path.exists(file_orders) and os.path.getsize(file_orders) > 0
                     df.to_csv(file_orders, mode='a', header=not file_exists, index=False)
 
-                    # Update stok
                     stok_baru = stok_tersedia - quantity
                     df_stok = pd.read_csv("stock.csv")
                     df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
@@ -199,29 +195,6 @@ if menu == "📥 Update Stok":
             df_stok.to_csv("stock.csv", index=False)    
 if menu == "📑 Pesanan":
     st.divider()
-    df_pesanan = pd.read_csv("data_pesanan.csv")
-
-    for index, row in df_pesanan.iterrows():
-        st.subheader(f"Pesanan dari {row['nama']}")
-        st.image(row["bukti pembayaran"], caption="Bukti Pembayaran", width=300)
-    df = pd.read_csv("orders.csv")
-    for i, row in df.iterrows():
-        st.write(f"Pesanan atas nama: {row['nama']}")
-        st.image(row["bukti pembayaran"], caption="Bukti Pembayaran")
-    file_orders = "orders.csv"
-    if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
-        df = pd.read_csv(file_orders)
-        st.dataframe(df)
-
-        with open(file_orders, "rb") as f:
-            st.download_button(
-                label="Download Pesanan (CSV)", 
-                data=f,
-                file_name="orders.csv",
-                mime="text/csv"
-            )
-    else:
-        st.info("Belum ada pesanan.")
     st.subheader("📑 Daftar Pesanan Masuk")
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
@@ -231,6 +204,20 @@ if menu == "📑 Pesanan":
             st.info("Belum ada data pesanan.")
         else:
             st.dataframe(df_orders)
+            with open(file_orders, "rb") as f:
+                st.download_button(
+                label="Download Pesanan (CSV)", 
+                data=f,
+                file_name="orders.csv",
+                mime="text/csv")
+            st.divider 
+            st.subheader ("🖥 Lihat Bukti Pembayaran")
+            id_pilihan = st.selectbox("Pilih ID Pesanan", df_orders["id"])
+            data_terpilih = df_orders[df_orders["id"] == id_pilihan].iloc[0]
+            if os.path.exists(data_terpilih["bukti pembayaran"]):
+                st.image(data_terpilih["bukti pembayaran"], caption="Bukti Pembayaran", width=300)
+            else:
+                st.warning("Bukti pembayaran belum tersedia.")
             st.subheader("🗑 Hapus Data Pesanan")
             id_hapus = st.selectbox("Pilih ID Pesanan untuk Dihapus", df_orders["id_pesanan"].unique())
             hapus_button = st.button("Hapus Pesanan")
