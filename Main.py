@@ -199,6 +199,11 @@ if menu == "📥 Update Stok":
             df_stok.to_csv("stock.csv", index=False)    
 if menu == "📑 Pesanan":
     st.divider()
+    df_pesanan = pd.read_csv("data_pesanan.csv")
+
+    for index, row in df_pesanan.iterrows():
+        st.subheader(f"Pesanan dari {row['nama']}")
+        st.image(row["bukti pembayaran"], caption="Bukti Pembayaran", width=300)
     df = pd.read_csv("orders.csv")
     for i, row in df.iterrows():
         st.write(f"Pesanan atas nama: {row['nama']}")
@@ -210,7 +215,7 @@ if menu == "📑 Pesanan":
 
         with open(file_orders, "rb") as f:
             st.download_button(
-                label="Download Pesanan (CSV)",
+                label="Download Pesanan (CSV)", 
                 data=f,
                 file_name="orders.csv",
                 mime="text/csv"
