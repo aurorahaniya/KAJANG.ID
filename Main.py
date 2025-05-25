@@ -135,7 +135,7 @@ if menu == "📦 Pemesanan":
                 st.warning("❌ Pesanan tidak ditemukan.")
         else:
             st.warning("Masukkan ID pesanan terlebih dahulu.")
-    st.info("Silakan masukkan nama atau kode untuk mengecek pesanan")
+    st.info("Silakan masukkan kode ID untuk mengecek pesanan")
 
 if menu == "🌟Tentang Kami":
     st.divider()
@@ -201,7 +201,7 @@ if menu == "📑 Pesanan":
         if df_orders.empty:
             st.info("Belum ada data pesanan.")
         else:
-            st.dataframe(df_orders)
+            st.dataframe(df_orders.sort_values(by="waktu", ascending=False))
             with open("orders.csv", "rb") as f:
                 st.download_button(
                 label="Download Pesanan (CSV)", 
@@ -233,7 +233,7 @@ if menu == "📑 Pesanan":
                 st.success(f"Status pesanan {selected_id} berhasil diubah menjadi '{new_status}'.")
             st.divider()
             st.subheader("📜 Riwayat Transaksi")
-            st.dataframe(df_orders.sort_values(by="waktu", ascending=False))
+            st.dataframe(df_orders)
     else:
         st.warning("Belum ada pesanan masuk.")
 if menu == "👤 Pelanggan":
