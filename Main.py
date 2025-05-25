@@ -53,8 +53,7 @@ if menu == "📦 Pemesanan":
         kolom = ["waktu", "nama", "Nomor Telepon", "jumlah", "alamat",
                  "pilih metode pengiriman", "bukti pembayaran",
                  "catatan tambahan", "total", "id_pesanan"]
-        pd.DataFrame(columns=kolom).to_csv(file_orders, index=False)
-
+        
     st.divider()
     st.write("**Harga = 6000/iket**")
     st.write("**Minimal pembelian 3 ikat**")
