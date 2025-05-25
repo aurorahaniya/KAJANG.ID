@@ -193,7 +193,7 @@ if menu == "📥 Update Stok":
             df_stok.to_csv("stock.csv", index=False)    
 if menu == "📑 Pesanan":
     st.divider()
-    st.subheader("📑 Daftar Pesanan Masuk")
+    st.subheader("📑 Riwayat Transaksi")
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
         if "status" not in df_orders.columns:
@@ -201,7 +201,7 @@ if menu == "📑 Pesanan":
         if df_orders.empty:
             st.info("Belum ada data pesanan.")
         else:
-            st.dataframe(df_orders.sort_values(by="waktu", ascending=False))
+            st.dataframe(df_orders)
             with open("orders.csv", "rb") as f:
                 st.download_button(
                 label="Download Pesanan (CSV)", 
@@ -209,6 +209,9 @@ if menu == "📑 Pesanan":
                 file_name="orders.csv",
                 mime="text/csv")
             st.divider ()
+            st.subheader("📜 Riwayat Transaksi")
+            st.dataframe(df_orders.sort_values(by="waktu", ascending=False))
+            st.divider()
             st.subheader ("🖥 Lihat Bukti Pembayaran")
             id_pilihan = st.selectbox("Pilih ID Pesanan Pelanggan", df_orders["id_pesanan"].unique())
             data_terpilih = df_orders[df_orders["id_pesanan"] == id_pilihan].iloc[0]
@@ -232,8 +235,6 @@ if menu == "📑 Pesanan":
                 df_orders.to_csv("orders.csv", index=False)
                 st.success(f"Status pesanan {selected_id} berhasil diubah menjadi '{new_status}'.")
             st.divider()
-            st.subheader("📜 Riwayat Transaksi")
-            st.dataframe(df_orders)
     else:
         st.warning("Belum ada pesanan masuk.")
 if menu == "👤 Pelanggan":
