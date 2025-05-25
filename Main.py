@@ -6,6 +6,8 @@ import uuid
 import matplotlib.pyplot as plt
 os.makedirs("uploads", exist_ok=True)
 st.set_page_config(page_title = "KAJANG.ID")
+file_orders = "orders.csv"
+df = pd.DataFrame()
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 st.sidebar.title("KAJANG.ID")
@@ -46,7 +48,6 @@ def baca_stok():
     return stok
 if menu == "📦 Pemesanan":
     file_orders = "orders.csv"
-    df = pd.DataFrame()
     harga = 6000
     if not os.path.exists(file_orders) or os.path.getsize(file_orders) == 0:
         kolom = ["waktu", "nama", "Nomor Telepon", "jumlah", "alamat",
