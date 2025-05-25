@@ -209,7 +209,7 @@ if menu == "📑 Pesanan":
                 file_name="orders.csv",
                 mime="text/csv")
             st.divider ()
-            st.subheader("📜 RIWAYAT")
+            st.subheader("📜 Daftar Pesanan Masuk")
             st.dataframe(df_orders.sort_values(by="waktu", ascending=False))
             st.divider()
             st.subheader ("🖥 Lihat Bukti Pembayaran")
