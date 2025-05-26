@@ -23,7 +23,7 @@ if not st.session_state['logged_in']:
             else:
                 st.error("Username atau password salah!")
 if st.session_state['logged_in']:
-    menu = st.sidebar.radio("Pilih Halaman", ["📥 Update Stok", "📑 Pesanan","👤 Pelanggan", "📊 Laporan Penjualan","Logout"])
+    menu = st.sidebar.radio("Pilih Halaman", ["📥 Update Stok", "📑 Pesanan","👤 Pelanggan", "📊 Laporan Penjualan", "📘 Laporan Keuangan", Logout"])
 else:
     menu = st.sidebar.radio("Pilih Halaman", ["🏠 Beranda", "📦 Pemesanan", "🌟Tentang Kami","📬 Kontak Kami"])
 if menu == "Logout":
@@ -325,6 +325,57 @@ if menu == "📊 Laporan Penjualan":
     
     st.subheader("Tabel Ringkasan Penjualan Bulanan")
     st.dataframe(penjualan_bulanan)
+if menu == "📘 Laporan Keuangan":
+    st.divider()
+    st.subheader("📘 Laporan Keuangan & Siklus Akuntansi")
+
+    if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
+        data = pd.read_csv("orders.csv")
+        data['waktu'] = pd.to_datetime(data['waktu'])
+        data['Bulan'] = data['waktu'].dt.to_period('M').astype(str)
+        
+        st.subheader("📒 1. Pencatatan Jurnal Umum")
+        jurnal_umum = data[['waktu', 'nama', 'total']].copy()
+        jurnal_umum['Keterangan'] = "Penjualan Tunai"
+        st.dataframe(jurnal_umum.rename(columns={
+            'waktu': 'Tanggal',
+            'nama': 'Keterangan Tambahan',
+            'total': 'Jumlah (Rp)'
+        }))
+
+        st.subheader("📘 2. Buku Besar (Akun Penjualan)")
+        buku_besar = data.groupby('Bulan')['total'].sum().reset_index()
+        buku_besar.columns = ['Bulan', 'Total Penjualan']
+        st.dataframe(buku_besar)
+
+        st.subheader("🧾 3. Neraca Saldo")
+        penjualan_total = buku_besar['Total Penjualan'].sum()
+        saldo = pd.DataFrame({
+            'Akun': ['Kas', 'Penjualan'],
+            'Debet': [penjualan_total, 0],
+            'Kredit': [0, penjualan_total]
+        })
+        st.dataframe(saldo)
+
+        st.subheader("📄 4. Laporan Laba Rugi")
+        st.write("Asumsi: Biaya Tetap Rp 100.000, Biaya Variabel Rp 2.000/ikat")
+        total_biaya = 100000 + (data['jumlah'].sum() * 2000)
+        laba = penjualan_total - total_biaya
+        st.markdown(f"**Total Penjualan**: Rp {penjualan_total:,.0f}")
+        st.markdown(f"**Total Biaya**: Rp {total_biaya:,.0f}")
+        st.markdown(f"**Laba Bersih**: Rp {laba:,.0f}")
+
+        st.subheader("📊 5. Neraca Sederhana")
+        neraca = pd.DataFrame({
+            'Akun': ['Kas', 'Modal', 'Laba Ditahan'],
+            'Jumlah (Rp)': [penjualan_total, penjualan_total - laba, laba]
+        })
+        st.dataframe(neraca)
+
+        st.success("✅ Siklus akuntansi berhasil ditampilkan.")
+    else:
+        st.warning("File 'orders.csv' tidak ditemukan atau kosong.")
+
 
 
 
