@@ -371,7 +371,7 @@ if menu == "📘 Laporan Keuangan":
                     "Jumlah": jumlah
                 }
                 # Tambahkan ke DataFrame
-                df_transaksi = df_transaksi.append(new_data, ignore_index=True)
+                df_transaksi = pd.concat([df_transaksi, pd.DataFrame([new_data])], ignore_index=True)
                 # Simpan ke CSV
                 save_data(df_transaksi)
                 st.success("Transaksi berhasil ditambahkan!")
