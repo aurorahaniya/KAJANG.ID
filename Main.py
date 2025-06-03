@@ -432,6 +432,41 @@ if menu == "📘 Laporan Keuangan":
         # Tampilkan tabel laba rugi
         st.table(laporan_lr)
 
+        st.divider()
+        st.subheader("📒 Neraca (Balance Sheet)")
+
+        # Hitung total kas dari transaksi (asumsi akun 'Kas' bisa Debit/Kredit)
+        kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
+        kas_keluar = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Kredit'].sum()
+        kas = kas_masuk - kas_keluar
+
+        # Hitung total utang (asumsi akun mengandung kata "Utang" dan nilainya ada di kredit)
+        utang = df_transaksi[df_transaksi['Akun'].str.contains("Utang", case=False, na=False)]['Kredit'].sum()
+
+        # Hitung total modal awal atau tambahan (asumsi akun mengandung kata "Modal")
+        modal = df_transaksi[df_transaksi['Akun'].str.contains("Modal", case=False, na=False)]['Kredit'].sum()
+
+        # Ambil laba bersih dari laporan laba rugi sebelumnya
+        laba_bersih = pendapatan - beban
+
+        # Ekuitas = Modal + Laba Bersih
+        ekuitas = modal + laba_bersih
+
+        # Total Aset = Kas
+        # Total Kewajiban + Ekuitas = Utang + Ekuitas
+        total_aset = kas
+        total_kewajiban_ekuitas = utang + ekuitas
+
+        # Buat DataFrame neraca
+        neraca_df = pd.DataFrame({
+            "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
+            "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]
+        })
+
+        # Tampilkan neraca
+        st.table(neraca_df)
+
+
 
 
 
