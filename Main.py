@@ -411,6 +411,16 @@ if menu == "📘 Laporan Keuangan":
         st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
         st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
 
+        st.subheader("📈 Laporan Laba Rugi")
+        if not df_transaksi.empty:
+            pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan")]['Kredit'].sum()
+            beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban")]['Debit'].sum()
+            laba_bersih = pendapatan - beban
+
+            st.markdown(f"**Total Pendapatan:** Rp {pendapatan:,.0f}")
+            st.markdown(f"**Total Beban:** Rp {beban:,.0f}")
+            st.markdown(f"### Laba Bersih: Rp {laba_bersih:,.0f}")
+
 
 
 
