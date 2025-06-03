@@ -384,6 +384,33 @@ if menu == "📘 Laporan Keuangan":
         st.subheader("Data Transaksi")
         st.dataframe(df_transaksi)
 
+        st.divider()
+        st.subheader("📒 Jurnal Umum")
+        st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
+
+        # Buku Besar
+        st.subheader("📗 Buku Besar")
+        if not df_transaksi.empty:
+            akun_list = df_transaksi["Akun"].unique()
+            for akun in akun_list:
+                st.markdown(f"#### Akun: {akun}")
+                df_akun = df_transaksi[df_transaksi["Akun"] == akun]
+                st.dataframe(df_akun[["Tanggal", "Keterangan", "Debit", "Kredit"]])
+                total_debit = df_akun["Debit"].sum()
+                total_kredit = df_akun["Kredit"].sum()
+                st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
+                st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+
+        # Neraca Saldo
+        st.subheader("📘 Neraca Saldo")
+        neraca_saldo = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
+        st.dataframe(neraca_saldo)
+
+        total_debit = neraca_saldo["Debit"].sum()
+        total_kredit = neraca_saldo["Kredit"].sum()
+        st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
+        st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+
 
 
 
