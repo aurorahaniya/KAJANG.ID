@@ -335,7 +335,7 @@ if menu == "📘 Laporan Keuangan":
                 return pd.read_csv(TRANSAKSI_FILE)
             else:
                 # Buat file baru dengan kolom standar
-                df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun", "Jumlah"])
+                df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
                 df.to_csv(TRANSAKSI_FILE, index=False)
                 return df
 
@@ -354,6 +354,8 @@ if menu == "📘 Laporan Keuangan":
             tipe = st.selectbox("Tipe Transaksi", ["Penjualan (Pemasukan)", "Pembelian (Pengeluaran)"])
             keterangan = st.text_input("Keterangan")
             akun = st.text_input("Akun (misal: Kas, Beban Bahan Baku, Pendapatan Penjualan, dll.)")
+            debit = st.number_input("Debit (Rp)", min_value=0, step=1000)
+            kredit = st.number_input("Kredit (Rp)", min_value=0, step=1000)
             jumlah = st.number_input("Jumlah (Rp)", min_value=0, step=1000)
 
             submitted = st.form_submit_button("Tambah Transaksi")
@@ -368,6 +370,8 @@ if menu == "📘 Laporan Keuangan":
                     "Tipe": tipe,
                     "Keterangan": keterangan,
                     "Akun": akun,
+                    "Debit":debit,
+                    "Kredit": kredit,
                     "Jumlah": jumlah
                 }
                 # Tambahkan ke DataFrame
