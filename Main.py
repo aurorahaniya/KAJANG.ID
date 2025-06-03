@@ -327,65 +327,68 @@ if menu == "📊 Laporan Penjualan":
 if menu == "📘 Laporan Keuangan":
         st.divider()
         st.subheader("📘 Laporan Keuangan & Siklus Akuntansi")
+        TRANSAKSI_FILE = "transaksi.csv"
 
-        if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
-            data = pd.read_csv("orders.csv")
-            data['waktu'] = pd.to_datetime(data['waktu'])
-            data['Bulan'] = data['waktu'].dt.to_period('M').astype(str)
+# Fungsi load data transaksi
+        def load_data():
+            if os.path.exists(TRANSAKSI_FILE):
+                return pd.read_csv(TRANSAKSI_FILE)
+            else:
+                # Buat file baru dengan kolom standar
+                df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun", "Jumlah"])
+                df.to_csv(TRANSAKSI_FILE, index=False)
+                return df
+
+        # Fungsi simpan data transaksi
+        def save_data(df):
+            df.to_csv(TRANSAKSI_FILE, index=False)
+
+        st.title("Menu Transaksi")
+
+        # Load data transaksi
+        df_transaksi = load_data()
+
+        # Form input transaksi baru
+        with st.form("form_transaksi"):
+            tanggal = st.date_input("Tanggal Transaksi")
+            tipe = st.selectbox("Tipe Transaksi", ["Penjualan (Pemasukan)", "Pembelian (Pengeluaran)"])
+            keterangan = st.text_input("Keterangan")
+            akun = st.text_input("Akun (misal: Kas, Beban Bahan Baku, Pendapatan Penjualan, dll.)")
+            jumlah = st.number_input("Jumlah (Rp)", min_value=0, step=1000)
+
+            submitted = st.form_submit_button("Tambah Transaksi")
+
+            if submitted:
+                # Tentukan tipe akun debit/kredit
+                # Contoh sederhana: Penjualan = kredit kas bertambah, pembelian = debit beban kas berkurang
+                tipe_akun = "Debit" if tipe == "Pembelian (Pengeluaran)" else "Kredit"
+                # Buat baris data baru
+                new_data = {
+                    "Tanggal": tanggal,
+                    "Tipe": tipe,
+                    "Keterangan": keterangan,
+                    "Akun": akun,
+                    "Jumlah": jumlah
+                }
+                # Tambahkan ke DataFrame
+                df_transaksi = df_transaksi.append(new_data, ignore_index=True)
+                # Simpan ke CSV
+                save_data(df_transaksi)
+                st.success("Transaksi berhasil ditambahkan!")
+
+        # Tampilkan data transaksi
+        st.subheader("Data Transaksi")
+        st.dataframe(df_transaksi)
+
+
+
+
+
+
+
+
+
+
+
+                
             
-            st.subheader("📒 1. Pencatatan Jurnal Umum")
-            jurnal_umum = data[['waktu', 'nama', 'total']].copy()
-            jurnal_umum['Keterangan'] = "Penjualan Tunai"
-            st.dataframe(jurnal_umum.rename(columns={
-                'waktu': 'Tanggal',
-                'nama': 'Keterangan Tambahan',
-                'total': 'Jumlah (Rp)'
-            }))
-
-            st.subheader("📘 2. Buku Besar (Akun Penjualan)")
-            buku_besar = data.groupby('Bulan')['total'].sum().reset_index()
-            buku_besar.columns = ['Bulan', 'Total Penjualan']
-            st.dataframe(buku_besar)
-
-            st.subheader("🧾 3. Neraca Saldo")
-            penjualan_total = buku_besar['Total Penjualan'].sum()
-            saldo = pd.DataFrame({
-                'Akun': ['Kas', 'Penjualan'],
-                'Debet': [penjualan_total, 0],
-                'Kredit': [0, penjualan_total]
-            })
-            st.dataframe(saldo)
-
-            st.subheader("📄 4. Laporan Laba Rugi")
-            st.write("Asumsi: Biaya Tetap Rp 100.000, Biaya Variabel Rp 2.000/ikat")
-            total_biaya = 100000 + (data['jumlah'].sum() * 2000)
-            laba = penjualan_total - total_biaya
-            st.markdown(f"**Total Penjualan**: Rp {penjualan_total:,.0f}")
-            st.markdown(f"**Total Biaya**: Rp {total_biaya:,.0f}")
-            st.markdown(f"**Laba Bersih**: Rp {laba:,.0f}")
-
-            st.subheader("📊 5. Neraca Sederhana")
-            neraca = pd.DataFrame({
-                'Akun': ['Kas', 'Modal', 'Laba Ditahan'],
-                'Jumlah (Rp)': [penjualan_total, penjualan_total - laba, laba]
-            })
-            st.dataframe(neraca)
-
-            st.success("✅ Siklus akuntansi berhasil ditampilkan.")
-        else:
-            st.warning("File 'orders.csv' tidak ditemukan atau kosong.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
