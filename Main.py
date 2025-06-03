@@ -356,7 +356,7 @@ if menu == "📘 Laporan Keuangan":
             akun = st.text_input("Akun (misal: Kas, Beban Bahan Baku, Pendapatan Penjualan, dll.)")
             debit = st.number_input("Debit (Rp)", min_value=0, step=1000)
             kredit = st.number_input("Kredit (Rp)", min_value=0, step=1000)
-            jumlah = st.number_input("Jumlah (Rp)", min_value=0, step=1000)
+    
 
             submitted = st.form_submit_button("Tambah Transaksi")
 
@@ -372,7 +372,7 @@ if menu == "📘 Laporan Keuangan":
                     "Akun": akun,
                     "Debit":debit,
                     "Kredit": kredit,
-                    "Jumlah": jumlah
+                    "Jumlah": debit + kredit
                 }
                 # Tambahkan ke DataFrame
                 df_transaksi = pd.concat([df_transaksi, pd.DataFrame([new_data])], ignore_index=True)
