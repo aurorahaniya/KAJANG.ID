@@ -438,6 +438,16 @@ if menu == "📘 Laporan Keuangan":
                 "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
                 "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]})
             st.table(neraca_df)
+            st.warning("Klik tombol berikut untuk menghapus seluruh data laporan keuangan:")
+            hapus_konfirmasi = st.checkbox("Saya yakin ingin menghapus semua laporan")
+            if hapus_konfirmasi and st.button("🗑️ Hapus Semua Data"):
+                try:
+                    df_kosong = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun", "Debit", "Kredit", "Jumlah"])
+                    df_kosong.to_csv(TRANSAKSI_FILE, index=False)
+                    st.success("Data laporan keuangan berhasil dihapus.")
+                except Exception as e:
+                    st.error(f"Gagal menghapus data: {e}")
+
 
 
 
