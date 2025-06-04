@@ -168,7 +168,7 @@ if menu ==  "📬 Kontak Kami":
     - 📍 **Alamat:** Jl. Sekaran No.11, Gunung Pati, Semarang, Jawa Tengah""")
     st.divider()
     st.info("Kami akan merespons pesan Anda secepat mungkin pada jam kerja.")
-if menu == " Persediaan ":
+if menu == "📥 Persediaan ":
     st.divider()
     st.subheader("📥 Tambah Persediaan Kacang Panjang")
     try:
@@ -334,20 +334,18 @@ if menu == "📘 Laporan Keuangan":
         ["🔹 Transaksi", "🔹 Jurnal Umum", "🔹 Buku Besar","🔹 Neraca Saldo", "🔹 Laporan Laba/Rugi", "🔹 Neraca"],
         horizontal=True)
         df_transaksi = pd.DataFrame() 
-
-        if pilihan_laporan == "🔹 Transaksi" :
-            TRANSAKSI_FILE = "transaksi.csv"
-            def load_data():
+        TRANSAKSI_FILE = "transaksi.csv"
+        def load_data():
                 if os.path.exists(TRANSAKSI_FILE):
                     return pd.read_csv(TRANSAKSI_FILE)
                 else:
                     df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
                     df.to_csv(TRANSAKSI_FILE, index=False)
                     return df
-
-            def save_data(df):
+        def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
 
+        if pilihan_laporan == "🔹 Transaksi" :
             st.title("Input Transaksi")
             df_transaksi = load_data()
 
