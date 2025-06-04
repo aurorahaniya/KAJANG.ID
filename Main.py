@@ -343,7 +343,7 @@ if menu == "📘 Laporan Keuangan":
                     return df
         def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
-        df_transaksi = pd.DataFrame
+        df_transaksi = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
         if pilihan_laporan == "🔹 Transaksi" :
             st.title("Input Transaksi")
             df_transaksi = load_data()
