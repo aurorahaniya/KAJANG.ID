@@ -343,7 +343,8 @@ if menu == "📘 Laporan Keuangan":
                     return df
         def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
-        df_transaksi = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
+        df_transaksi = load_data()
+
         if pilihan_laporan == "🔹 Transaksi" :
             st.title("Input Transaksi")
             df_transaksi = load_data()
@@ -376,12 +377,15 @@ if menu == "📘 Laporan Keuangan":
 
                     save_data(df_transaksi)
                     st.success("Transaksi berhasil ditambahkan!")
+                    
 
         elif pilihan_laporan == "🔹 Jurnal Umum":
             st.divider()
-            st.subheader("Jurnal Umum")
-            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
-            st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
+            st.subheader("Jurnal Umum")   
+            if not df_transaksi.empty:
+                st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
+            else:
+                st.info("Belum ada data transaksi.")
 
 
         elif pilihan_laporan == "🔹 Buku Besar":
