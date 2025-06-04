@@ -403,54 +403,60 @@ if menu == "📘 Laporan Keuangan":
         
         elif pilihan_laporan == "🔹 Neraca Saldo" :
             st.subheader("Neraca Saldo")
-            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
-            neraca_saldo = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
-            st.dataframe(neraca_saldo)
+            if not df_transaksi.empty:
+                grouped = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
+                grouped["Saldo"] = grouped["Debit"] - grouped["Kredit"]
+                st.dataframe(grouped)
 
-            total_debit = neraca_saldo["Debit"].sum()
-            total_kredit = neraca_saldo["Kredit"].sum()
-            st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
-            st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
-        
+                total_debit = grouped["Debit"].sum()
+                total_kredit = grouped["Kredit"].sum()
+                st.write(f"**Total Debit: {total_debit:,.2f}**")
+                st.write(f"**Total Kredit: {total_kredit:,.2f}**")
+            else:
+                st.info("Belum ada data transaksi.")
+
         elif pilihan_laporan == "🔹 Laporan Laba/Rugi":
             st.divider()
             st.subheader("📉 Laporan Laba Rugi")
-            pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
-            beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
-            laba_bersih = pendapatan - beban
-            laporan_lr = pd.DataFrame({
-                "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
-                "Jumlah (Rp)": [pendapatan, beban, laba_bersih]})
-            st.table(laporan_lr)
+            if not df_transaksi.empty:
+                pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
+                beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
+                laba_bersih = pendapatan - beban
+                laporan_lr = pd.DataFrame({
+                    "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
+                    "Jumlah (Rp)": [pendapatan, beban, laba_bersih]})
+                st.table(laporan_lr)
+            else:
+                st.info("Belum ada data transaksi.")
         
         elif pilihan_laporan == "🔹 Neraca" :
             st.divider()
             st.subheader(" Neraca ")
-            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
-            pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
-            beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
-            kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
-            kas_keluar = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Kredit'].sum()
-            kas = kas_masuk - kas_keluar
-            utang = df_transaksi[df_transaksi['Akun'].str.contains("Utang", case=False, na=False)]['Kredit'].sum()   
-            modal = df_transaksi[df_transaksi['Akun'].str.contains("Modal", case=False, na=False)]['Kredit'].sum()
-            laba_bersih = pendapatan - beban
-            ekuitas = modal + laba_bersih
-            total_aset = kas
-            total_kewajiban_ekuitas = utang + ekuitas
-            neraca_df = pd.DataFrame({
-                "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
-                "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]})
-            st.table(neraca_df)
-            st.warning("Klik tombol berikut untuk menghapus seluruh data laporan keuangan:")
-            hapus_konfirmasi = st.checkbox("Saya yakin ingin menghapus semua laporan")
-            if hapus_konfirmasi and st.button("🗑️ Hapus Semua Data"):
-                try:
-                    df_kosong = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun", "Debit", "Kredit", "Jumlah"])
-                    df_kosong.to_csv(TRANSAKSI_FILE, index=False)
-                    st.success("Data laporan keuangan berhasil dihapus.")
-                except Exception as e:
-                    st.error(f"Gagal menghapus data: {e}")
+            if not df_transaksi.empty:
+                pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
+                beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
+                kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
+                kas_keluar = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Kredit'].sum()
+                kas = kas_masuk - kas_keluar
+                utang = df_transaksi[df_transaksi['Akun'].str.contains("Utang", case=False, na=False)]['Kredit'].sum()   
+                modal = df_transaksi[df_transaksi['Akun'].str.contains("Modal", case=False, na=False)]['Kredit'].sum()
+                laba_bersih = pendapatan - beban
+                ekuitas = modal + laba_bersih
+                total_aset = kas
+                total_kewajiban_ekuitas = utang + ekuitas
+                neraca_df = pd.DataFrame({
+                    "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
+                    "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]})
+                st.table(neraca_df)
+                st.warning("Klik tombol berikut untuk menghapus seluruh data laporan keuangan:")
+                hapus_konfirmasi = st.checkbox("Saya yakin ingin menghapus semua laporan")
+                if hapus_konfirmasi and st.button("🗑️ Hapus Semua Data"):
+                    try:
+                        df_kosong = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun", "Debit", "Kredit", "Jumlah"])
+                        df_kosong.to_csv(TRANSAKSI_FILE, index=False)
+                        st.success("Data laporan keuangan berhasil dihapus.")
+                    except Exception as e:
+                        st.error(f"Gagal menghapus data: {e}")
 
 
 
