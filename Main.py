@@ -325,6 +325,7 @@ if menu == "📊 Laporan Penjualan":
         
         st.subheader("Tabel Ringkasan Penjualan Bulanan")
         st.dataframe(penjualan_bulanan)
+
 if menu == "📘 Laporan Keuangan":
         st.divider()
         st.subheader("📘 Laporan Keuangan & Siklus Akuntansi")
