@@ -380,6 +380,7 @@ if menu == "📘 Laporan Keuangan":
         elif pilihan_laporan == "🔹 Jurnal Umum":
             st.divider()
             st.subheader("Jurnal Umum")
+            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
             st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
 
 
@@ -398,6 +399,7 @@ if menu == "📘 Laporan Keuangan":
         
         elif pilihan_laporan == "🔹 Neraca Saldo" :
             st.subheader("Neraca Saldo")
+            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
             neraca_saldo = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
             st.dataframe(neraca_saldo)
 
@@ -420,6 +422,7 @@ if menu == "📘 Laporan Keuangan":
         elif pilihan_laporan == "🔹 Neraca" :
             st.divider()
             st.subheader(" Neraca ")
+            df_transaksi = pd.DataFrame(columns=["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"])
             pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
             beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
             kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
