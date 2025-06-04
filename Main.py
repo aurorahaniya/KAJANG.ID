@@ -23,7 +23,7 @@ if not st.session_state['logged_in']:
             else:
                 st.error("Username atau password salah!")
 if st.session_state['logged_in']:
-    menu = st.sidebar.radio("Pilih Halaman", ["📥 Persediaan", "📑 Pesanan","👤 Pelanggan", "Pemasukan", "Pengeluaran", "📊 Laporan Penjualan", "📘 Laporan Keuangan", "Logout"])
+    menu = st.sidebar.radio("Pilih Halaman", ["📥 Persediaan", "📑 Pesanan","👤 Pelanggan", "📊 Laporan Penjualan", "📘 Laporan Keuangan", "Logout"])
 else:
     menu = st.sidebar.radio("Pilih Halaman", ["🏠 Beranda", "📦 Pemesanan", "🌟Tentang Kami","📬 Kontak Kami"])
 if menu == "Logout":
@@ -333,7 +333,6 @@ if menu == "📘 Laporan Keuangan":
         "Pilih jenis laporan:",
         ["🔹 Transaksi", "🔹 Jurnal Umum", "🔹 Buku Besar","🔹 Neraca Saldo", "🔹 Laporan Laba/Rugi", "🔹 Neraca"],
         horizontal=True)
-        df_transaksi = pd.DataFrame() 
         TRANSAKSI_FILE = "transaksi.csv"
         def load_data():
                 if os.path.exists(TRANSAKSI_FILE):
@@ -344,7 +343,7 @@ if menu == "📘 Laporan Keuangan":
                     return df
         def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
-
+        df_transaksi = pd.DataFrame
         if pilihan_laporan == "🔹 Transaksi" :
             st.title("Input Transaksi")
             df_transaksi = load_data()
@@ -420,7 +419,7 @@ if menu == "📘 Laporan Keuangan":
         
         elif pilihan_laporan == "🔹 Neraca" :
             st.divider()
-            st.subheader(" Neracaa ")
+            st.subheader(" Neraca ")
             pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
             beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
             kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
