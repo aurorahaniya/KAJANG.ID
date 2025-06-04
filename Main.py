@@ -420,7 +420,7 @@ if menu == "📘 Laporan Keuangan":
         
         elif pilihan_laporan == "🔹 Neraca" :
             st.divider()
-            st.subheader(" Neraca ")
+            st.subheader(" Neracaa ")
             pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
             beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
             kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
