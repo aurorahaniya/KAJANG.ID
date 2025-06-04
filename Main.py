@@ -23,7 +23,7 @@ if not st.session_state['logged_in']:
             else:
                 st.error("Username atau password salah!")
 if st.session_state['logged_in']:
-    menu = st.sidebar.radio("Pilih Halaman", ["📥 Update Stok", "📑 Pesanan","👤 Pelanggan", "📊 Laporan Penjualan", "📘 Laporan Keuangan", "Logout"])
+    menu = st.sidebar.radio("Pilih Halaman", ["📥 Persediaan", "📑 Pesanan","👤 Pelanggan", "Pemasukan", "Pengeluaran", "📊 Laporan Penjualan", "📘 Laporan Keuangan", "Logout"])
 else:
     menu = st.sidebar.radio("Pilih Halaman", ["🏠 Beranda", "📦 Pemesanan", "🌟Tentang Kami","📬 Kontak Kami"])
 if menu == "Logout":
@@ -168,9 +168,9 @@ if menu ==  "📬 Kontak Kami":
     - 📍 **Alamat:** Jl. Sekaran No.11, Gunung Pati, Semarang, Jawa Tengah""")
     st.divider()
     st.info("Kami akan merespons pesan Anda secepat mungkin pada jam kerja.")
-if menu == "📥 Update Stok":
+if menu == " Persediaan ":
     st.divider()
-    st.subheader("📥 Update Stok Kacang Panjang")
+    st.subheader("📥 Tambah Persediaan Kacang Panjang")
     try:
         df_stok = pd.read_csv("stock.csv")
         stok_saat_ini = int(df_stok[df_stok["Produk"] == "Kacang Panjang"]["stok"].values[0])
@@ -254,6 +254,7 @@ if menu == "👤 Pelanggan":
                 st.info("Pelanggan ini belum memiliki riwayat belanja.")
     else:
         st.warning("Belum ada data pesanan yang tersimpan.")
+
 if menu == "📊 Laporan Penjualan":
    st.divider()
    st.subheader("LAPORAN KAJANG.ID")
@@ -327,144 +328,115 @@ if menu == "📊 Laporan Penjualan":
 if menu == "📘 Laporan Keuangan":
         st.divider()
         st.subheader("📘 Laporan Keuangan & Siklus Akuntansi")
-        TRANSAKSI_FILE = "transaksi.csv"
+        pilihan_laporan = st.radio(
+        "Pilih jenis laporan:",
+        ["🔹 Transaksi", "🔹 Jurnal Umum", "🔹 Buku Besar","🔹 Neraca Saldo", "🔹 Laporan Laba/Rugi", "🔹 Neraca"],
+        horizontal=True)
+        df_transaksi = pd.DataFrame() 
 
-# Fungsi load data transaksi
-        def load_data():
-            if os.path.exists(TRANSAKSI_FILE):
-                return pd.read_csv(TRANSAKSI_FILE)
-            else:
-                # Buat file baru dengan kolom standar
-                df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
+        if pilihan_laporan == "🔹 Transaksi" :
+            TRANSAKSI_FILE = "transaksi.csv"
+            def load_data():
+                if os.path.exists(TRANSAKSI_FILE):
+                    return pd.read_csv(TRANSAKSI_FILE)
+                else:
+                    df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
+                    df.to_csv(TRANSAKSI_FILE, index=False)
+                    return df
+
+            def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
-                return df
 
-        # Fungsi simpan data transaksi
-        def save_data(df):
-            df.to_csv(TRANSAKSI_FILE, index=False)
+            st.title("Input Transaksi")
+            df_transaksi = load_data()
 
-        st.title("Menu Transaksi")
+            
+            with st.form("form_transaksi"):
+                tanggal = st.date_input("Tanggal Transaksi")
+                tipe = st.selectbox("Tipe Transaksi", ["Pemasukan", "Pengeluaran", "Umum"])
+                keterangan = st.text_input("Keterangan")
+                akun = st.text_input("Akun")
+                debit = st.number_input("Debit (Rp)", min_value=0, step=1000)
+                kredit = st.number_input("Kredit (Rp)", min_value=0, step=1000)
+        
 
-        # Load data transaksi
-        df_transaksi = load_data()
+                submitted = st.form_submit_button("Tambah Transaksi")
 
-        # Form input transaksi baru
-        with st.form("form_transaksi"):
-            tanggal = st.date_input("Tanggal Transaksi")
-            tipe = st.selectbox("Tipe Transaksi", ["Penjualan (Pemasukan)", "Pembelian (Pengeluaran)"])
-            keterangan = st.text_input("Keterangan")
-            akun = st.text_input("Akun (misal: Kas, Beban Bahan Baku, Pendapatan Penjualan, dll.)")
-            debit = st.number_input("Debit (Rp)", min_value=0, step=1000)
-            kredit = st.number_input("Kredit (Rp)", min_value=0, step=1000)
-    
+                if submitted:
+                    tipe_akun = "Debit" if tipe == "Pengeluaran" else "Kredit"
+                    new_data = {
+                        "Tanggal": tanggal,
+                        "Tipe": tipe,
+                        "Keterangan": keterangan,
+                        "Akun": akun,
+                        "Debit":debit,
+                        "Kredit": kredit,
+                        "Jumlah": debit + kredit
+                    }
 
-            submitted = st.form_submit_button("Tambah Transaksi")
+                    df_transaksi = pd.concat([df_transaksi, pd.DataFrame([new_data])], ignore_index=True)
 
-            if submitted:
-                # Tentukan tipe akun debit/kredit
-                # Contoh sederhana: Penjualan = kredit kas bertambah, pembelian = debit beban kas berkurang
-                tipe_akun = "Debit" if tipe == "Pembelian (Pengeluaran)" else "Kredit"
-                # Buat baris data baru
-                new_data = {
-                    "Tanggal": tanggal,
-                    "Tipe": tipe,
-                    "Keterangan": keterangan,
-                    "Akun": akun,
-                    "Debit":debit,
-                    "Kredit": kredit,
-                    "Jumlah": debit + kredit
-                }
-                # Tambahkan ke DataFrame
-                df_transaksi = pd.concat([df_transaksi, pd.DataFrame([new_data])], ignore_index=True)
-                # Simpan ke CSV
-                save_data(df_transaksi)
-                st.success("Transaksi berhasil ditambahkan!")
+                    save_data(df_transaksi)
+                    st.success("Transaksi berhasil ditambahkan!")
 
-        # Tampilkan data transaksi
-        st.subheader("Data Transaksi")
-        st.dataframe(df_transaksi)
+        elif pilihan_laporan == "🔹 Jurnal Umum":
+            st.divider()
+            st.subheader("Jurnal Umum")
+            st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
 
-        st.divider()
-        st.subheader("📒 Jurnal Umum")
-        st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
 
-        # Buku Besar
-        st.subheader("📗 Buku Besar")
-        if not df_transaksi.empty:
-            akun_list = df_transaksi["Akun"].unique()
-            for akun in akun_list:
-                st.markdown(f"#### Akun: {akun}")
-                df_akun = df_transaksi[df_transaksi["Akun"] == akun]
-                st.dataframe(df_akun[["Tanggal", "Keterangan", "Debit", "Kredit"]])
-                total_debit = df_akun["Debit"].sum()
-                total_kredit = df_akun["Kredit"].sum()
-                st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
-                st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+        elif pilihan_laporan == "🔹 Buku Besar":
+            st.subheader("Buku Besar")   
+            if not df_transaksi.empty:
+                akun_list = df_transaksi["Akun"].unique()
+                for akun in akun_list:
+                    st.markdown(f" Akun: {akun}")
+                    df_akun = df_transaksi[df_transaksi["Akun"] == akun]
+                    st.dataframe(df_akun[["Tanggal", "Keterangan", "Debit", "Kredit"]])
+                    total_debit = df_akun["Debit"].sum()
+                    total_kredit = df_akun["Kredit"].sum()
+                    st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
+                    st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+        
+        elif pilihan_laporan == "🔹 Neraca Saldo" :
+            st.subheader("Neraca Saldo")
+            neraca_saldo = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
+            st.dataframe(neraca_saldo)
 
-        # Neraca Saldo
-        st.subheader("📘 Neraca Saldo")
-        neraca_saldo = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
-        st.dataframe(neraca_saldo)
-
-        total_debit = neraca_saldo["Debit"].sum()
-        total_kredit = neraca_saldo["Kredit"].sum()
-        st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
-        st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
-
-        st.divider()
-        st.subheader("📉 Laporan Laba Rugi")
-
-        # Hitung total pendapatan (asumsi akun yang mengandung "Pendapatan" ada di sisi Kredit)
-        pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
-
-        # Hitung total beban (asumsi akun yang mengandung "Beban" ada di sisi Debit)
-        beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
-
-        # Hitung laba bersih
-        laba_bersih = pendapatan - beban
-
-        # Buat DataFrame untuk laporan
-        laporan_lr = pd.DataFrame({
-            "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
-            "Jumlah (Rp)": [pendapatan, beban, laba_bersih]
-        })
-
-        # Tampilkan tabel laba rugi
-        st.table(laporan_lr)
-
-        st.divider()
-        st.subheader("📒 Neraca (Balance Sheet)")
-
-        # Hitung total kas dari transaksi (asumsi akun 'Kas' bisa Debit/Kredit)
-        kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
-        kas_keluar = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Kredit'].sum()
-        kas = kas_masuk - kas_keluar
-
-        # Hitung total utang (asumsi akun mengandung kata "Utang" dan nilainya ada di kredit)
-        utang = df_transaksi[df_transaksi['Akun'].str.contains("Utang", case=False, na=False)]['Kredit'].sum()
-
-        # Hitung total modal awal atau tambahan (asumsi akun mengandung kata "Modal")
-        modal = df_transaksi[df_transaksi['Akun'].str.contains("Modal", case=False, na=False)]['Kredit'].sum()
-
-        # Ambil laba bersih dari laporan laba rugi sebelumnya
-        laba_bersih = pendapatan - beban
-
-        # Ekuitas = Modal + Laba Bersih
-        ekuitas = modal + laba_bersih
-
-        # Total Aset = Kas
-        # Total Kewajiban + Ekuitas = Utang + Ekuitas
-        total_aset = kas
-        total_kewajiban_ekuitas = utang + ekuitas
-
-        # Buat DataFrame neraca
-        neraca_df = pd.DataFrame({
-            "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
-            "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]
-        })
-
-        # Tampilkan neraca
-        st.table(neraca_df)
+            total_debit = neraca_saldo["Debit"].sum()
+            total_kredit = neraca_saldo["Kredit"].sum()
+            st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
+            st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+        
+        elif pilihan_laporan == "🔹 Laporan Laba/Rugi":
+            st.divider()
+            st.subheader("📉 Laporan Laba Rugi")
+            pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
+            beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
+            laba_bersih = pendapatan - beban
+            laporan_lr = pd.DataFrame({
+                "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
+                "Jumlah (Rp)": [pendapatan, beban, laba_bersih]})
+            st.table(laporan_lr)
+        
+        elif pilihan_laporan == "🔹 Neraca" :
+            st.divider()
+            st.subheader(" Neraca ")
+            pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
+            beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
+            kas_masuk = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Debit'].sum()
+            kas_keluar = df_transaksi[df_transaksi['Akun'].str.contains("Kas", case=False, na=False)]['Kredit'].sum()
+            kas = kas_masuk - kas_keluar
+            utang = df_transaksi[df_transaksi['Akun'].str.contains("Utang", case=False, na=False)]['Kredit'].sum()   
+            modal = df_transaksi[df_transaksi['Akun'].str.contains("Modal", case=False, na=False)]['Kredit'].sum()
+            laba_bersih = pendapatan - beban
+            ekuitas = modal + laba_bersih
+            total_aset = kas
+            total_kewajiban_ekuitas = utang + ekuitas
+            neraca_df = pd.DataFrame({
+                "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
+                "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]})
+            st.table(neraca_df)
 
 
 
