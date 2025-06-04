@@ -168,7 +168,8 @@ if menu ==  "📬 Kontak Kami":
     - 📍 **Alamat:** Jl. Sekaran No.11, Gunung Pati, Semarang, Jawa Tengah""")
     st.divider()
     st.info("Kami akan merespons pesan Anda secepat mungkin pada jam kerja.")
-if menu == "📥 Persediaan ":
+
+if menu == "📥 Persediaan":
     st.divider()
     st.subheader("📥 Tambah Persediaan Kacang Panjang")
     try:
@@ -191,6 +192,7 @@ if menu == "📥 Persediaan ":
                 df_stok.loc[df_stok["Produk"] == "Kacang Panjang", "stok"] = stok_baru
                 st.success(f"✅ Stok berhasil ditambah {nilai} ikat. Total: {stok_baru} ikat.")           
             df_stok.to_csv("stock.csv", index=False)    
+
 if menu == "📑 Pesanan":
     st.divider()
     st.subheader("📑 Riwayat Transaksi")
@@ -377,7 +379,7 @@ if menu == "📘 Laporan Keuangan":
 
                     save_data(df_transaksi)
                     st.success("Transaksi berhasil ditambahkan!")
-                    
+          
 
         elif pilihan_laporan == "🔹 Jurnal Umum":
             st.divider()
@@ -400,6 +402,8 @@ if menu == "📘 Laporan Keuangan":
                     total_kredit = df_akun["Kredit"].sum()
                     st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
                     st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+            else : 
+                st.info("Belum ada data transaksi.")
         
         elif pilihan_laporan == "🔹 Neraca Saldo" :
             st.subheader("Neraca Saldo")
@@ -457,7 +461,8 @@ if menu == "📘 Laporan Keuangan":
                         st.success("Data laporan keuangan berhasil dihapus.")
                     except Exception as e:
                         st.error(f"Gagal menghapus data: {e}")
-
+            else : 
+                st.info("Belum ada data transaksi.")
 
 
 
