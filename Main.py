@@ -355,12 +355,13 @@ if menu == "📘 Laporan Keuangan":
                 if os.path.exists(TRANSAKSI_FILE):
                     return pd.read_csv(TRANSAKSI_FILE)
                 else:
-                    df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit" "Jumlah"])
+                    df = pd.DataFrame(columns=["Tanggal", "Tipe", "Keterangan", "Akun","Debit", "Kredit"])
                     df.to_csv(TRANSAKSI_FILE, index=False)
                     return df
         def save_data(df):
                 df.to_csv(TRANSAKSI_FILE, index=False)
         df_transaksi = load_data()
+        df_transaksi["Akun"] = df_transaksi["Akun"].astype(str)
 
         if pilihan_laporan == "🔹 Transaksi" :
             st.title("Input Transaksi")
