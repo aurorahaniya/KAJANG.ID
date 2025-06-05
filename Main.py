@@ -245,9 +245,9 @@ if menu == "📑 Pesanan":
         st.warning("Belum ada pesanan masuk.")
 if menu == "👤 Pelanggan":
     st.subheader("👤 Data Pelanggan")
-    df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
+        df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
         if "nama" not in df_orders.columns:
             st.warning("Kolom 'nama' tidak ditemukan di file orders.csv.")
         else:
@@ -273,6 +273,7 @@ if menu == "📊 Laporan Penjualan":
     
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         data = pd.read_csv("orders.csv")
+        df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
         data['waktu'] = pd.to_datetime(data['waktu'])
         
         st.subheader("Data Penjualan (preview)")
@@ -406,7 +407,11 @@ if menu == "📘 Laporan Keuangan":
             st.divider()
             st.subheader("Jurnal Umum")   
             if not df_transaksi.empty:
-                st.dataframe(df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]])
+                df_tampil = df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]].copy()
+                df_tampil = df_transaksi[["Tanggal", "Keterangan", "Akun", "Debit", "Kredit"]].copy()
+                df_tampil["Debit"] = df_tampil["Debit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                df_tampil["Kredit"] = df_tampil["Kredit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                st.dataframe(df_tampil)
             else:
                 st.info("Belum ada data transaksi.")
 
@@ -418,11 +423,14 @@ if menu == "📘 Laporan Keuangan":
                 for akun in akun_list:
                     st.markdown(f" Akun: {akun}")
                     df_akun = df_transaksi[df_transaksi["Akun"] == akun]
-                    st.dataframe(df_akun[["Tanggal", "Keterangan", "Debit", "Kredit"]])
+                    df_akun_tampil = df_akun[["Tanggal", "Keterangan", "Debit", "Kredit"]].copy()
+                    df_akun_tampil["Debit"] = df_akun_tampil["Debit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                    df_akun_tampil["Kredit"] = df_akun_tampil["Kredit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                    st.dataframe(df_akun_tampil)
                     total_debit = df_akun["Debit"].sum()
                     total_kredit = df_akun["Kredit"].sum()
-                    st.write(f"**Total Debit:** Rp{total_debit:,.0f}")
-                    st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}")
+                    st.write(f"**Total Debit:** Rp{total_debit:,.0f}".replace(",", "."))
+                    st.write(f"**Total Kredit:** Rp{total_kredit:,.0f}".replace(",", "."))
             else : 
                 st.info("Belum ada data transaksi.")
         
@@ -431,7 +439,11 @@ if menu == "📘 Laporan Keuangan":
             if not df_transaksi.empty:
                 grouped = df_transaksi.groupby("Akun")[["Debit", "Kredit"]].sum().reset_index()
                 grouped["Saldo"] = grouped["Debit"] - grouped["Kredit"]
-                st.dataframe(grouped)
+                grouped_tampil = grouped.copy()
+                grouped_tampil["Debit"] = grouped_tampil["Debit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                grouped_tampil["Kredit"] = grouped_tampil["Kredit"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                grouped_tampil["Saldo"] = grouped["Saldo"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                st.dataframe(grouped_tampil)
 
                 total_debit = grouped["Debit"].sum()
                 total_kredit = grouped["Kredit"].sum()
@@ -447,9 +459,12 @@ if menu == "📘 Laporan Keuangan":
                 pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
                 beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
                 laba_bersih = pendapatan - beban
+                def format_rupiah(x):
+                    return f"Rp{x:,.0f}".replace(",", ".")
+
                 laporan_lr = pd.DataFrame({
                     "Keterangan": ["Total Pendapatan", "Total Beban", "Laba Bersih"],
-                    "Jumlah (Rp)": [pendapatan, beban, laba_bersih]})
+                    "Jumlah (Rp)": [format_rupiah(pendapatan), format_rupiah(beban), format_rupiah(laba_bersih)]})
                 st.table(laporan_lr)
             else:
                 st.info("Belum ada data transaksi.")
@@ -457,6 +472,8 @@ if menu == "📘 Laporan Keuangan":
         elif pilihan_laporan == "🔹 Neraca" :
             st.divider()
             st.subheader(" Neraca ")
+            def format_rupiah(x):
+                return f"Rp{x:,.0f}".replace(",", ".")
             if not df_transaksi.empty:
                 pendapatan = df_transaksi[df_transaksi['Akun'].str.contains("Pendapatan", case=False, na=False)]['Kredit'].sum()
                 beban = df_transaksi[df_transaksi['Akun'].str.contains("Beban", case=False, na=False)]['Debit'].sum()
@@ -469,10 +486,18 @@ if menu == "📘 Laporan Keuangan":
                 ekuitas = modal + laba_bersih
                 total_aset = kas
                 total_kewajiban_ekuitas = utang + ekuitas
-                neraca_df = pd.DataFrame({
-                    "Kategori": ["Aset (Kas)", "Kewajiban (Utang)", "Ekuitas (Modal + Laba Bersih)", "Total Kewajiban + Ekuitas"],
-                    "Jumlah (Rp)": [kas, utang, ekuitas, total_kewajiban_ekuitas]})
-                st.table(neraca_df)
+
+                neraca_df = pd.DataFrame({"Kategori": [
+                    "Aset (Kas)", 
+                    "Kewajiban (Utang)", 
+                    "Ekuitas (Modal + Laba Bersih)", 
+                    "Total Kewajiban + Ekuitas"],
+                "Jumlah (Rp)": [
+                    format_rupiah(kas), 
+                    format_rupiah(utang), 
+                    format_rupiah(ekuitas), 
+                    format_rupiah(total_kewajiban_ekuitas)]})
+                
                 st.warning("Klik tombol berikut untuk menghapus seluruh data laporan keuangan:")
                 hapus_konfirmasi = st.checkbox("Saya yakin ingin menghapus semua laporan")
                 if hapus_konfirmasi and st.button("🗑️ Hapus Semua Data"):
