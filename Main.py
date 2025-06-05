@@ -136,9 +136,7 @@ if menu == "📦 Pemesanan":
                 st.success("✅ Pesanan ditemukan:")
                 st.dataframe(hasil)
         else:
-            st.warning("❌ Pesanan tidak ditemukan.")
-    else:
-        st.error("File orders.csv tidak ditemukan atau kosong.")
+            st.warning("❌ Pesanan tidak ditemukan.")   
     st.info("Silakan masukkan kode ID untuk mengecek pesanan")
 
 if menu == "🌟Tentang Kami":
