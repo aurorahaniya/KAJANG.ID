@@ -121,21 +121,24 @@ if menu == "📦 Pemesanan":
     cek_button = st.button("🔍 Cek Sekarang")
     
     file_orders = "orders.csv"
-    hasil = pd.DataFrame()
 
     if cek_button:
-        if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
+        if not kode.strip():
+            st.warning("Masukkan ID pesanan terlebih dahulu.")
+        elif os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
             df = pd.read_csv(file_orders)
+            df['id_pesanan'] = df['id_pesanan'].astype(str).str.strip()
             df['total'] = pd.to_numeric(df['total'], errors='coerce').fillna(0).apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
-        if kode:
+            kode = kode.strip()
             hasil = df[df["id_pesanan"].str.lower() == kode.lower()]
+
             if not hasil.empty:
                 st.success("✅ Pesanan ditemukan:")
                 st.dataframe(hasil)
-            else:
-                st.warning("❌ Pesanan tidak ditemukan.")
         else:
-            st.warning("Masukkan ID pesanan terlebih dahulu.")
+            st.warning("❌ Pesanan tidak ditemukan.")
+    else:
+        st.error("File orders.csv tidak ditemukan atau kosong.")
     st.info("Silakan masukkan kode ID untuk mengecek pesanan")
 
 if menu == "🌟Tentang Kami":
