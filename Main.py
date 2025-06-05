@@ -273,7 +273,7 @@ if menu == "📊 Laporan Penjualan":
     
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         data = pd.read_csv("orders.csv")
-        df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
+        data["total"] = pd.to_numeric(data["total"], errors="coerce").fillna(0)
         data['waktu'] = pd.to_datetime(data['waktu'])
         
         st.subheader("Data Penjualan (preview)")
