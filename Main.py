@@ -55,7 +55,7 @@ if menu == "📦 Pemesanan":
                  "catatan tambahan", "total", "id_pesanan"]
         
     st.divider()
-    st.write("**Harga = 6000/iket**")
+    st.write("**Harga = Rp6.000/iket**")
     st.write("**Minimal pembelian 3 ikat**")
     st.write("**Silakan transfer ke rekening :**")
     st.write("**BCA-522020891 a.n KAJANG.ID**")
@@ -74,7 +74,7 @@ if menu == "📦 Pemesanan":
         bukti = st.file_uploader("Bukti Pembayaran", type=["jpg", "jpeg", "png"])
         notes = st.text_input("Catatan Tambahan")
         total = quantity * harga
-        st.write(f"Total: Rp {total:,}")
+        st.write(f"Total: Rp{total:,.0f}".replace(",", "."))
         submitted = st.form_submit_button("Pesan Sekarang")
 
         if submitted:
@@ -126,6 +126,7 @@ if menu == "📦 Pemesanan":
     if cek_button:
         if os.path.exists(file_orders) and os.path.getsize(file_orders) > 0:
             df = pd.read_csv(file_orders)
+            df['total'] = pd.to_numeric(df['total'], errors='coerce').fillna(0).apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
         if kode:
             hasil = df[df["id_pesanan"].str.lower() == kode.lower()]
             if not hasil.empty:
