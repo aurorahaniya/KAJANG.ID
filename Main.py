@@ -58,7 +58,7 @@ if menu == "📦 Pemesanan":
     st.write("**Harga = Rp6.000/iket**")
     st.write("**Minimal pembelian 3 ikat**")
     st.write("**Silakan transfer ke rekening :**")
-    st.write("**BCA-522020891 a.n KAJANG.ID**")
+    st.write("**BCA-52202071 a.n KAJANG.ID**")
     st.divider()
     st.subheader("PESAN 📩")
 
