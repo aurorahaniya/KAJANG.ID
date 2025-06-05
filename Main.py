@@ -197,17 +197,20 @@ if menu == "📥 Persediaan":
 
 if menu == "📑 Pesanan":
     st.divider()
+    def format_rupiah(x):
+        return f"Rp{x:,.0f}".replace(",", ".")
+
     st.subheader("📑 Riwayat Transaksi")
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
         df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
-        df_orders["total"] = df_orders["total"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+        df_orders["total_rp"] = df_orders["total"].apply(format_rupiah)
         if "status" not in df_orders.columns:
             df_orders["status"] = "Baru"
         if df_orders.empty:
             st.info("Belum ada data pesanan.")
         else:
-            st.dataframe(df_orders)
+            st.dataframe(df_orders.drop(columns=["total"]).rename(columns={"total_rp": "total"}))
             with open("orders.csv", "rb") as f:
                 st.download_button(
                 label="Download Pesanan (CSV)", 
