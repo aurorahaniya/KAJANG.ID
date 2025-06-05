@@ -245,6 +245,7 @@ if menu == "📑 Pesanan":
         st.warning("Belum ada pesanan masuk.")
 if menu == "👤 Pelanggan":
     st.subheader("👤 Data Pelanggan")
+    df_orders["total"] = pd.to_numeric(df_orders["total"], errors="coerce").fillna(0)
     if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
         df_orders = pd.read_csv("orders.csv")
         if "nama" not in df_orders.columns:
@@ -258,82 +259,89 @@ if menu == "👤 Pelanggan":
             riwayat = df_orders[df_orders["nama"] == selected_pelanggan]
             if not riwayat.empty:
                 st.write(f"Total transaksi: {len(riwayat)}")
-                st.dataframe(riwayat.sort_values(by="waktu", ascending=False))
+                riwayat_tampil = riwayat.copy()
+                riwayat_tampil["total"] = riwayat_tampil["total"].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+                st.dataframe(riwayat_tampil.sort_values(by="waktu", ascending=False))
             else:
                 st.info("Pelanggan ini belum memiliki riwayat belanja.")
     else:
         st.warning("Belum ada data pesanan yang tersimpan.")
 
 if menu == "📊 Laporan Penjualan":
-   st.divider()
-   st.subheader("LAPORAN KAJANG.ID")
-   if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
-        data = pd.read_csv("orders.csv")
-        data['waktu'] = pd.to_datetime(data['waktu'])    
-        st.subheader("Data Penjualan (preview)")
-        st.dataframe(data.head())
+    st.divider()
+    st.subheader("LAPORAN KAJANG.ID")
     
+    if os.path.exists("orders.csv") and os.path.getsize("orders.csv") > 0:
+        data = pd.read_csv("orders.csv")
+        data['waktu'] = pd.to_datetime(data['waktu'])
+        
+        st.subheader("Data Penjualan (preview)")
+        preview_data = data.head().copy()
+        preview_data['total'] = preview_data['total'].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+        st.dataframe(preview_data)
+
+        data['total'] = pd.to_numeric(data['total'], errors='coerce').fillna(0)
         total_omset = data['total'].sum()
         total_unit = data['jumlah'].sum()
         rata_penjualan = data.groupby('waktu')['total'].sum().mean()
-        max_penjualan = data.groupby('waktu')['total'].sum().max()
-        min_penjualan = data.groupby('waktu')['total'].sum().min()
-        
+
         col1, col2, col3 = st.columns(3)
-        col1.metric("Total Omset (Rp)", f"{total_omset:,}")
-        col2.metric("Total Kacang Panjang Terjual (unit)", f"{total_unit}")
-        col3.metric("Rata-rata Penjualan Harian (Rp)", f"{rata_penjualan:,.0f}")
+        col1.metric("Total Omset", f"Rp{total_omset:,.0f}".replace(",", "."))
+        col2.metric("Total Kacang Panjang Terjual", f"{total_unit:,}".replace(",", ".") + " unit")
+        col3.metric("Rata-rata Penjualan Harian", f"Rp{rata_penjualan:,.0f}".replace(",", "."))
 
         penjualan_harian = data.groupby('waktu')['total'].sum().reset_index()
-
         penjualan_harian['MA_7'] = penjualan_harian['total'].rolling(window=7).mean()
 
         st.subheader("Grafik Penjualan Harian dengan Moving Average 7 Hari")
-        fig, ax = plt.subplots(figsize=(10,5))
+        fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(penjualan_harian['waktu'], penjualan_harian['total'], label='Penjualan Harian', marker='o')
         ax.plot(penjualan_harian['waktu'], penjualan_harian['MA_7'], label='Moving Average 7 Hari', linewidth=3)
-        ax.set_xlabel('waktu')
+        ax.set_xlabel('Tanggal')
         ax.set_ylabel('Total Penjualan (Rp)')
         ax.legend()
         st.pyplot(fig)
 
         data['Bulan'] = data['waktu'].dt.to_period('M').astype(str)
         penjualan_bulanan = data.groupby('Bulan')['total'].sum().reset_index()
-        if not penjualan_bulanan.empty:
-            bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
-            st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
-        else:
-            st.warning("Tidak ada data penjualan bulanan.")
 
-        st.subheader("Penjualan Bulanan")
-        st.bar_chart(penjualan_bulanan.set_index('Bulan'))
         if not penjualan_bulanan.empty:
             bulan_terbaik = penjualan_bulanan.loc[penjualan_bulanan['total'].idxmax()]
-            st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp {bulan_terbaik['total']:,.0f}")
-            st.markdown(f"Bulan terbaik: {bulan_terbaik['Bulan']} dengan penjualan Rp {bulan_terbaik['total']:,}")
+            st.metric("Bulan Penjualan Terbaik", bulan_terbaik['Bulan'], f"Rp{bulan_terbaik['total']:,.0f}".replace(",", "."))
+
+            st.subheader("Penjualan Bulanan")
+            st.bar_chart(penjualan_bulanan.set_index('Bulan'))
+
+            st.markdown(f"📈 **Bulan terbaik:** {bulan_terbaik['Bulan']} dengan penjualan **Rp{bulan_terbaik['total']:,.0f}**".replace(",", "."))
         else:
-            st.warning("Data penjualan bulanan kosong. Tidak bisa menentukan bulan terbaik.")
+            st.warning("Data penjualan bulanan kosong.")
+
         
         nama_hari_indonesia = {
-        'Monday': 'Senin',
-        'Tuesday': 'Selasa',
-        'Wednesday': 'Rabu',
-        'Thursday': 'Kamis',
-        'Friday': 'Jumat',
-        'Saturday': 'Sabtu',
-        'Sunday': 'Minggu'}
+            'Monday': 'Senin',
+            'Tuesday': 'Selasa',
+            'Wednesday': 'Rabu',
+            'Thursday': 'Kamis',
+            'Friday': 'Jumat',
+            'Saturday': 'Sabtu',
+            'Sunday': 'Minggu'
+        }
         penjualan_hari = data.groupby(data['waktu'].dt.day_name())['total'].sum()
         penjualan_hari = penjualan_hari.rename(index=nama_hari_indonesia)
+
         if not penjualan_hari.empty:
             hari_terbaik = penjualan_hari.idxmax()
             st.subheader("Penjualan per Hari dalam Minggu")
             st.bar_chart(penjualan_hari)
-            st.markdown(f"Hari terbaik: {hari_terbaik} dengan penjualan Rp {penjualan_hari[hari_terbaik]:,}")
+            st.markdown(f"📆 **Hari terbaik:** {hari_terbaik} dengan penjualan **Rp{penjualan_hari[hari_terbaik]:,.0f}**".replace(",", "."))
         else:
             st.warning("Data penjualan per hari kosong.")
+
         
         st.subheader("Tabel Ringkasan Penjualan Bulanan")
-        st.dataframe(penjualan_bulanan)
+        ringkasan_bulanan = penjualan_bulanan.copy()
+        ringkasan_bulanan['total'] = ringkasan_bulanan['total'].apply(lambda x: f"Rp{x:,.0f}".replace(",", "."))
+        st.dataframe(ringkasan_bulanan)
 
 if menu == "📘 Laporan Keuangan":
         st.divider()
@@ -364,8 +372,13 @@ if menu == "📘 Laporan Keuangan":
                 tipe = st.selectbox("Tipe Transaksi", ["Pemasukan", "Pengeluaran", "Umum"])
                 keterangan = st.text_input("Keterangan")
                 akun = st.text_input("Akun")
-                debit = st.number_input("Debit (Rp)", min_value=0, step=1000)
-                kredit = st.number_input("Kredit (Rp)", min_value=0, step=1000)
+                def parse_rupiah(rp_string):
+                    return int(rp_string.replace("Rp", "").replace(".", "").replace(",", "").strip() or 0)
+                debit_str = st.text_input("Debit (Rp)", value="Rp 0")
+                kredit_str = st.text_input("Kredit (Rp)", value="Rp 0")
+                debit = parse_rupiah(debit_str)
+                kredit = parse_rupiah(kredit_str)
+
         
 
                 submitted = st.form_submit_button("Tambah Transaksi")
